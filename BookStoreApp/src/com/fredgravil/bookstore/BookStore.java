@@ -4,17 +4,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Scanner;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 
 public class BookStore extends JFrame{
 
@@ -36,6 +31,11 @@ public class BookStore extends JFrame{
     JTextField quantityInput;
     JTextField itemInfoInput;
     JTextField totalInput;
+    JLabel numItemsLabel;
+    JLabel bookIdLabel;
+    JLabel quantityLabel;
+    JLabel itemInfoLabel;
+    JLabel totalLabel;
 
     public String Search(String id){
 
@@ -43,7 +43,6 @@ public class BookStore extends JFrame{
         try {
             URL url = getClass().getResource("inventory.txt");
             scan = new Scanner(new File(url.getPath()));
-            System.out.println(url.toString());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -106,11 +105,23 @@ public class BookStore extends JFrame{
 
     public void WriteFile(StringBuffer input){
 
-        try (Writer writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream("output.txt"), "utf-8"))) {
-            writer.write(input.toString());
-        } catch (IOException e) {
-            e.printStackTrace();
+        try{
+            File file = new File("output.txt");
+            if(!file.exists()){
+                file.createNewFile();
+            }
+            FileWriter fw = new FileWriter(file,true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter pw = new PrintWriter(bw);
+
+            pw.print(input.toString());
+            pw.close();
+
+            System.out.println("Data successfully appended at the end of file");
+
+        }catch(IOException ioe){
+            System.out.println("Exception occurred:");
+            ioe.printStackTrace();
         }
 
 
@@ -134,30 +145,28 @@ public class BookStore extends JFrame{
 
         JPanel panel = new JPanel();
 
-        JLabel numItemsLabel = new JLabel("Enter number of items in this order:");
-        numItemsLabel.setBorder(new EmptyBorder(0,0,0,20));
+        numItemsLabel = new JLabel("Enter number of items in this order:");
         numItemsInput = new JTextField();
         numItemsInput.setColumns(40);
 
         panel.add(numItemsLabel);
         panel.add(numItemsInput);
 
-        JLabel bookIdLabel = new JLabel("Enter Book Id for Item #1:");
-        bookIdLabel.setBorder(new EmptyBorder(0,0,0,20));
+        bookIdLabel = new JLabel("Enter Book Id for Item #1:");
         bookIdInput = new JTextField();
         bookIdInput.setColumns(40);
 
         panel.add(bookIdLabel);
         panel.add(bookIdInput);
 
-        JLabel quantityLabel = new JLabel("Enter quantity for Item #1:");
+        quantityLabel = new JLabel("Enter quantity for Item #1:");
         quantityInput = new JTextField();
         quantityInput.setColumns(40);
 
         panel.add(quantityLabel);
         panel.add(quantityInput);
 
-        JLabel itemInfoLabel = new JLabel("Item #1 info:");
+        itemInfoLabel = new JLabel("Item #1 info:");
         itemInfoInput = new JTextField();
         itemInfoInput.setEnabled(false);
         itemInfoInput.setColumns(40);
@@ -165,7 +174,7 @@ public class BookStore extends JFrame{
         panel.add(itemInfoLabel);
         panel.add(itemInfoInput);
 
-        JLabel totalLabel = new JLabel("Order subtotal for 0 item(s):");
+        totalLabel = new JLabel("Order subtotal for " + itemNum+ "item(s):");
         totalInput = new JTextField();
         totalInput.setEnabled(false);
         totalInput.setColumns(40);
@@ -211,7 +220,6 @@ public class BookStore extends JFrame{
         this.setVisible(true);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        System.out.println(new Date());
 
     }
 
@@ -222,13 +230,16 @@ public class BookStore extends JFrame{
 
             if(e.getSource() == process ){
 
-                String bookId = bookIdInput.getText().toString();
-                amtItems = Integer.parseInt(numItemsInput.getText().toString());
+                String bookId = bookIdInput.getText();
+                amtItems = Integer.parseInt(numItemsInput.getText());
 
                 //If customer wants no item, disable process button
-                if(amtItems <=  0 || itemNum > amtItems)
+                if(amtItems <=  0 )
                 {
                     process.setEnabled(false);
+                    bookIdInput.setEnabled(false);
+                    numItemsInput.setEnabled(false);
+
                 }
                 else {
 
@@ -236,41 +247,56 @@ public class BookStore extends JFrame{
                     bookInfo = Search(bookId);
 
                     if(bookInfo == null){
-                        JOptionPane.showMessageDialog(null, String.format("Book Id " + bookId + " not in file"));
+                        JOptionPane.showMessageDialog(null, "Book Id " + bookId + " not in file");
                     }
                     else{
-                        JOptionPane.showMessageDialog(null, String.format("Item #" + itemNum + " accepted"));
+                        JOptionPane.showMessageDialog(null, "Item #" + itemNum + " accepted");
                         itemInfoInput.setText(bookInfo);
 
                         process.setEnabled(false);
                         confirm.setEnabled(true);
                         view.setEnabled(true);
 
-                        if(itemNum == amtItems)
+                        if(itemNum == amtItems) {
                             finish.setEnabled(true);
+                            process.setEnabled(false);
+                            bookIdInput.setEnabled(false);
+                            numItemsInput.setEnabled(false);
+                        }
+                        else
+                            itemNum++;
 
-                        itemNum++;
                     }
                 }
             }
 
             else if(e.getSource() == confirm ){
 
-                int quantity = Integer.parseInt(quantityInput.getText().toString());
+                int quantity = Integer.parseInt(quantityInput.getText());
                 int discount = getDiscount(quantity);
-                float price = Float.parseFloat(String.format("%.2f",getPrice(discount)).toString());
+                float price = Float.parseFloat(String.format("%.2f",getPrice(discount)));
                 totalPrice += price * quantity;
 
                 bookInfo = bookInfo + " " + quantity + " " + discount  + "% $" + price;
                 itemInfoInput.setText(bookInfo);
                 totalInput.setText("$" + totalPrice);
 
+                bookIdLabel.setText("Enter Book ID for item #" + itemNum + ":");
+                quantityLabel.setText("Enter quantity for item #" + itemNum + ":");
+                itemInfoLabel.setText("Item #" + itemNum + " info:");
+                totalInput.setText("Order subtotal for " + itemNum + " item(s):");
+
                 bookIdInput.setText("");
                 quantityInput.setText("");
 
-                process.setText("Process Item #" + itemNum);
-                process.setEnabled(true);
-                confirm.setText("Confirm Item #" + itemNum);
+                if(itemNum != amtItems)
+                    process.setEnabled(true);
+                else {
+                    process.setEnabled(false);
+                    bookIdInput.setEnabled(false);
+                    quantityInput.setEnabled(false);
+                }
+
                 confirm.setEnabled(false);
 
                 books.add(bookInfo);
@@ -294,30 +320,34 @@ public class BookStore extends JFrame{
                 StringBuffer displayInfo = new StringBuffer();
                 StringBuffer booksToOutput = new StringBuffer();
 
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yy/mm/dd hh:mm:ss");
-                Date date = new Date();
-                dateFormat.applyPattern("dd/mm/yy hh:mm:ss ");
-                String dateId = dateFormat.format(date);
-                dateId = dateId.replaceAll("\\s","");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yy hh:mm:ss a z");
+                Date d= new Date();
+                String date = dateFormat.format(d);
 
-                displayInfo.append(date + "\n");
+                dateFormat = new SimpleDateFormat("yyMMddhhmmss");
+                String dateId = dateFormat.format(d);
+//                dateId = dateId.replaceAll("\\s","");
+
+                displayInfo.append("Date: " + date + "\n");
                 displayInfo.append("Number of line items: " + amtItems + "\n");
                 displayInfo.append("Item# / ID / Title / Price / Qty / Disc % /Subtotal: " + "\n\n");
 
+                String bookData;
                 for(int i = 0; i < books.size(); i++){
                     displayInfo.append(i+1 + ". " + books.get(i) + "\n");
-                    booksToOutput.append(dateId+ ", " + books.get(i));
+                    bookData = books.get(i).substring(7,books.get(i).length());
+                    booksToOutput.append(dateId+ ", " + bookData + "\n");
                 }
 
-                displayInfo.append("\n\nOrder subtotal: " + totalPrice + "\n\n");
-                displayInfo.append("Tax rate: %6\n\n");
+                displayInfo.append("\n\nOrder subtotal: $" + new DecimalFormat("##.##").format(totalPrice) + "\n\n");
+                displayInfo.append("Tax rate: 6%\n\n");
 
                 float tax = (float) (totalPrice * .06);
                 float priceWithTax = (float) (totalPrice + tax);
 
 
-                displayInfo.append("Tax amount: $"  + tax + "\n\n");
-                displayInfo.append("Order Total: $" + priceWithTax + "\n\n");
+                displayInfo.append("Tax amount: $"  + new DecimalFormat("##.##").format(tax) + "\n\n");
+                displayInfo.append("Order Total: $" + new DecimalFormat("##.##").format(priceWithTax) + "\n\n");
 
                 displayInfo.append("Thanks for shopping at Ye Olde Book Shoppe");
                 JOptionPane.showMessageDialog(null, displayInfo );
@@ -330,6 +360,8 @@ public class BookStore extends JFrame{
             else if(e.getSource() == newOrder ){
                 amtItems = 1;
                 numItemsInput.setText("");
+                itemInfoInput.setText("");
+                totalInput.setText("");
                 numItemsInput.setEnabled(true);
                 books.clear();
             }
