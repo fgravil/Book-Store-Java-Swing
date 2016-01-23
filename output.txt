@@ -1,9 +1,0 @@
-164421114417, "Top Secret Twenty One - Janet Evanovich", 8.99 6 10% $8.09
-160122121017, "Top Secret Twenty One - Janet Evanovich", 8.99 5 10% $8.09
-
-160122121155, "Gray Mountain - John Grisham", 14.95 1 0% $14.95
-160122121155, "Tricky Twenty-Two - Janet Evanovich", 12.95 40 20% $10.36
-
-160122122638, "Gray Mountain - John Grisham", 14.95 2 0% $14.95
-160122123759, "W Is For Wasted - Sue Grafton", 9.95 11 15% $8.46
-160122125532, "Tricky Twenty-Two - Janet Evanovich", 12.95 8 10% $11.65

@@ -15,17 +15,17 @@ public class BookStore extends JFrame{
 
     private static Scanner scan;
     private int amtItems;
-    private int itemNum = 1;
+    private int itemNum = 0;
     private String bookInfo = "";
     private float totalPrice;
     private ArrayList<String> books = new ArrayList<>();
 
-    JButton process;
-    JButton confirm;
-    JButton view;
-    JButton finish;
-    JButton newOrder;
-    JButton exit;
+    JButton processButton;
+    JButton confirmButton;
+    JButton viewButton;
+    JButton finishButton;
+    JButton newOrderButton;
+    JButton exitButton;
     JTextField numItemsInput;
     JTextField bookIdInput;
     JTextField quantityInput;
@@ -57,6 +57,7 @@ public class BookStore extends JFrame{
 
         }while (scan.hasNext());
 
+        scan.close();
         return null;
     }
 
@@ -141,6 +142,7 @@ public class BookStore extends JFrame{
         int xPos = (dimension.width / 2) - (this.getWidth() / 2);
         int yPos = (dimension.height / 2) - (this.getHeight() / 2);
         this.setLocation(xPos,yPos);
+
         this.setTitle("Ye Olde Book Shoppe");
 
         JPanel panel = new JPanel();
@@ -174,7 +176,7 @@ public class BookStore extends JFrame{
         panel.add(itemInfoLabel);
         panel.add(itemInfoInput);
 
-        totalLabel = new JLabel("Order subtotal for " + itemNum+ "item(s):");
+        totalLabel = new JLabel("Order subtotal for " + (itemNum+1) + " item(s):");
         totalInput = new JTextField();
         totalInput.setEnabled(false);
         totalInput.setColumns(40);
@@ -182,39 +184,39 @@ public class BookStore extends JFrame{
         panel.add(totalLabel);
         panel.add(totalInput);
 
-        process = new JButton("Process Item #1");
+        processButton = new JButton("Process Item #" + (itemNum+1));
         ButtonListener processListener = new ButtonListener();
-        process.addActionListener(processListener);
+        processButton.addActionListener(processListener);
 
-        confirm = new JButton("Confirm Item #1");
-        confirm.setEnabled(false);
+        confirmButton = new JButton("Confirm Item #"+(itemNum+1));
+        confirmButton.setEnabled(false);
         ButtonListener confirmListener = new ButtonListener();
-        confirm.addActionListener(confirmListener);
+        confirmButton.addActionListener(confirmListener);
 
-        view = new JButton("View Order");
+        viewButton = new JButton("View Order");
         ButtonListener viewListener = new ButtonListener();
-        view.setEnabled(false);
-        view.addActionListener(viewListener);
+        viewButton.setEnabled(false);
+        viewButton.addActionListener(viewListener);
 
-        finish = new JButton("Finish Order");
-        finish.setEnabled(false);
+        finishButton = new JButton("Finish Order");
+        finishButton.setEnabled(false);
         ButtonListener finishListener = new ButtonListener();
-        finish.addActionListener(finishListener);
+        finishButton.addActionListener(finishListener);
 
-        newOrder = new JButton("New Order");
+        newOrderButton = new JButton("New Order");
         ButtonListener newOrderListener = new ButtonListener();
-        newOrder.addActionListener(newOrderListener);
+        newOrderButton.addActionListener(newOrderListener);
 
-        exit = new JButton("Exit");
+        exitButton = new JButton("Exit");
         ButtonListener exitListener = new ButtonListener();
-        exit.addActionListener(exitListener);
+        exitButton.addActionListener(exitListener);
 
-        panel.add(process);
-        panel.add(confirm);
-        panel.add(view);
-        panel.add(finish);
-        panel.add(newOrder);
-        panel.add(exit);
+        panel.add(processButton);
+        panel.add(confirmButton);
+        panel.add(viewButton);
+        panel.add(finishButton);
+        panel.add(newOrderButton);
+        panel.add(exitButton);
 
         this.add(panel);
         this.setVisible(true);
@@ -228,15 +230,15 @@ public class BookStore extends JFrame{
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            if(e.getSource() == process ){
+            if(e.getSource() == processButton){
 
                 String bookId = bookIdInput.getText();
                 amtItems = Integer.parseInt(numItemsInput.getText());
 
-                //If customer wants no item, disable process button
+                //If customer wants no item, disable processButton button
                 if(amtItems <=  0 )
                 {
-                    process.setEnabled(false);
+                    processButton.setEnabled(false);
                     bookIdInput.setEnabled(false);
                     numItemsInput.setEnabled(false);
 
@@ -250,16 +252,16 @@ public class BookStore extends JFrame{
                         JOptionPane.showMessageDialog(null, "Book Id " + bookId + " not in file");
                     }
                     else{
-                        JOptionPane.showMessageDialog(null, "Item #" + itemNum + " accepted");
+                        JOptionPane.showMessageDialog(null, "Item #" + (itemNum+1) + " accepted");
                         itemInfoInput.setText(bookInfo);
 
-                        process.setEnabled(false);
-                        confirm.setEnabled(true);
-                        view.setEnabled(true);
+                        processButton.setEnabled(false);
+                        confirmButton.setEnabled(true);
+                        viewButton.setEnabled(true);
 
                         if(itemNum == amtItems) {
-                            finish.setEnabled(true);
-                            process.setEnabled(false);
+                            finishButton.setEnabled(true);
+                            processButton.setEnabled(false);
                             bookIdInput.setEnabled(false);
                             numItemsInput.setEnabled(false);
                         }
@@ -270,52 +272,58 @@ public class BookStore extends JFrame{
                 }
             }
 
-            else if(e.getSource() == confirm ){
+            else if(e.getSource() == confirmButton){
 
                 int quantity = Integer.parseInt(quantityInput.getText());
                 int discount = getDiscount(quantity);
                 float price = Float.parseFloat(String.format("%.2f",getPrice(discount)));
                 totalPrice += price * quantity;
 
-                bookInfo = bookInfo + " " + quantity + " " + discount  + "% $" + price;
+                bookInfo = bookInfo + ", " + quantity + ", " + discount  + "%, $" + price;
+
                 itemInfoInput.setText(bookInfo);
                 totalInput.setText("$" + totalPrice);
-
-                bookIdLabel.setText("Enter Book ID for item #" + itemNum + ":");
-                quantityLabel.setText("Enter quantity for item #" + itemNum + ":");
-                itemInfoLabel.setText("Item #" + itemNum + " info:");
-                totalInput.setText("Order subtotal for " + itemNum + " item(s):");
-
                 bookIdInput.setText("");
                 quantityInput.setText("");
 
-                if(itemNum != amtItems)
-                    process.setEnabled(true);
+                if(itemNum != amtItems) {
+
+                    bookIdLabel.setText("Enter Book ID for item #" + (itemNum+1) + ":");
+                    quantityLabel.setText("Enter quantity for item #" + (itemNum+1) + ":");
+                    itemInfoLabel.setText("Item #" + (itemNum+1) + " info:");
+                    totalLabel.setText("Order subtotal for " + (itemNum+1) + " item(s):");
+
+                    processButton.setEnabled(true);
+                    processButton.setText("Process Item #" + (itemNum+1));
+                    confirmButton.setText("Confirm Item #" + (itemNum+1));
+                }
                 else {
-                    process.setEnabled(false);
+
+                    processButton.setEnabled(false);
+                    finishButton.setEnabled(true);
                     bookIdInput.setEnabled(false);
                     quantityInput.setEnabled(false);
                 }
 
-                confirm.setEnabled(false);
+                confirmButton.setEnabled(false);
 
                 books.add(bookInfo);
 
             }
 
-            else if(e.getSource() == view ){
+            else if(e.getSource() == viewButton){
 
                 StringBuffer booksDisplay = new StringBuffer();
 
                 for(int i=0; i < books.size(); i++)
                 {
-                    booksDisplay.append(i+1 +". " + books.get(i) +"\n" );
+                    booksDisplay.append((i+1) +". " + books.get(i) +"\n" );
                 }
 
                 JOptionPane.showMessageDialog(null,booksDisplay);
             }
 
-            else if(e.getSource() == finish ){
+            else if(e.getSource() == finishButton){
 
                 StringBuffer displayInfo = new StringBuffer();
                 StringBuffer booksToOutput = new StringBuffer();
@@ -326,24 +334,21 @@ public class BookStore extends JFrame{
 
                 dateFormat = new SimpleDateFormat("yyMMddhhmmss");
                 String dateId = dateFormat.format(d);
-//                dateId = dateId.replaceAll("\\s","");
 
                 displayInfo.append("Date: " + date + "\n");
                 displayInfo.append("Number of line items: " + amtItems + "\n");
                 displayInfo.append("Item# / ID / Title / Price / Qty / Disc % /Subtotal: " + "\n\n");
 
-                String bookData;
                 for(int i = 0; i < books.size(); i++){
-                    displayInfo.append(i+1 + ". " + books.get(i) + "\n");
-                    bookData = books.get(i).substring(7,books.get(i).length());
-                    booksToOutput.append(dateId+ ", " + bookData + "\n");
+                    displayInfo.append((i+1) + ". " + books.get(i) + "\n");
+                    booksToOutput.append(dateId+ ", " + books.get(i) + ", " + date +"\n");
                 }
 
                 displayInfo.append("\n\nOrder subtotal: $" + new DecimalFormat("##.##").format(totalPrice) + "\n\n");
                 displayInfo.append("Tax rate: 6%\n\n");
 
                 float tax = (float) (totalPrice * .06);
-                float priceWithTax = (float) (totalPrice + tax);
+                float priceWithTax = (totalPrice + tax);
 
 
                 displayInfo.append("Tax amount: $"  + new DecimalFormat("##.##").format(tax) + "\n\n");
@@ -354,19 +359,40 @@ public class BookStore extends JFrame{
 
                 WriteFile(booksToOutput);
 
+                finishButton.setEnabled(false);
+
 
             }
 
-            else if(e.getSource() == newOrder ){
-                amtItems = 1;
+            else if(e.getSource() == newOrderButton){
+                amtItems = 0;
+                itemNum = 0;
+
+                bookIdLabel.setText("Enter Book Id for Item #1:");
+                quantityLabel.setText("Enter quantity for Item #1:");
+                itemInfoLabel.setText("Item #1 info:");
+                totalLabel.setText("Order subtotal for " + (itemNum+1) + " item(s):");
+
                 numItemsInput.setText("");
                 itemInfoInput.setText("");
                 totalInput.setText("");
+
                 numItemsInput.setEnabled(true);
+                bookIdInput.setEnabled(true);
+                quantityInput.setEnabled(true);
+
+                processButton.setText("Process Item #" + (itemNum+1));
+                confirmButton.setText("Confirm Item #" + (itemNum+1));
+
+                processButton.setEnabled(true);
+                confirmButton.setEnabled(false);
+                finishButton.setEnabled(false);
+
+
                 books.clear();
             }
 
-            else if(e.getSource() == exit ){
+            else if(e.getSource() == exitButton){
                 System.exit(0);
             }
 
